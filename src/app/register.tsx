@@ -11,22 +11,39 @@ import {
 import { useRouter } from "expo-router";
 import { useState } from "react";
 
-import { login } from "@/services/api/auth";
-import { useAuth } from "@/context/auth-context";
+import { register } from "@/services/api/auth";
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const router = useRouter();
-  const { refreshUser } = useAuth();
 
   const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
+  const [organizationName, setOrganizationName] =
+    useState("");
+
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin() {
-    if (!username.trim() || !password) {
+  async function handleRegister() {
+    if (
+      !username.trim() ||
+      !firstName.trim() ||
+      !lastName.trim() ||
+      !password ||
+      !organizationName.trim()
+    ) {
       Alert.alert(
         "خطا",
-        "نام کاربری و رمز عبور را وارد کنید.",
+        "لطفاً تمام فیلدها را تکمیل کنید.",
+      );
+      return;
+    }
+
+    if (password.length < 8) {
+      Alert.alert(
+        "خطا",
+        "رمز عبور باید حداقل ۸ کاراکتر باشد.",
       );
       return;
     }
@@ -34,33 +51,35 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      await login(
+      const response = await register(
         username.trim(),
+        firstName.trim(),
+        lastName.trim(),
         password,
+        organizationName.trim(),
       );
 
-      /*
-       * Login توکن‌ها را ذخیره می‌کند،
-       * اما user داخل AuthContext را تغییر نمی‌دهد.
-       *
-       * با refreshUser اطلاعات کاربر از /auth/me/
-       * گرفته شده و AuthContext آپدیت می‌شود.
-       */
-      await refreshUser();
-
-      /*
-       * بعد از تغییر user، Protected Route اجازه
-       * ورود به Dashboard را می‌دهد.
-       */
-      router.replace("/(dashboard)");
+      Alert.alert(
+        "ثبت‌نام موفق",
+        response.message ||
+          "ثبت‌نام با موفقیت انجام شد. حساب شما پس از تأیید فعال خواهد شد.",
+        [
+          {
+            text: "متوجه شدم",
+            onPress: () => {
+              router.replace("/");
+            },
+          },
+        ],
+      );
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
-          : "خطایی در ورود رخ داد.";
+          : "خطایی در ثبت‌نام رخ داد.";
 
       Alert.alert(
-        "ورود ناموفق",
+        "ثبت‌نام ناموفق",
         message,
       );
     } finally {
@@ -72,11 +91,11 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>
-          ورود به حساب
+          ایجاد حساب
         </Text>
 
         <Text style={styles.subtitle}>
-          وارد حساب مدیریت کسب‌وکار خود شوید
+          اطلاعات حساب مدیریت کسب‌وکار خود را وارد کنید
         </Text>
 
         <View style={styles.form}>
@@ -92,6 +111,33 @@ export default function LoginScreen() {
           />
 
           <TextInput
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholder="نام"
+            editable={!loading}
+            returnKeyType="next"
+            style={styles.input}
+          />
+
+          <TextInput
+            value={lastName}
+            onChangeText={setLastName}
+            placeholder="نام خانوادگی"
+            editable={!loading}
+            returnKeyType="next"
+            style={styles.input}
+          />
+
+          <TextInput
+            value={organizationName}
+            onChangeText={setOrganizationName}
+            placeholder="نام کسب‌وکار / سازمان"
+            editable={!loading}
+            returnKeyType="next"
+            style={styles.input}
+          />
+
+          <TextInput
             value={password}
             onChangeText={setPassword}
             placeholder="رمز عبور"
@@ -100,12 +146,12 @@ export default function LoginScreen() {
             autoCorrect={false}
             editable={!loading}
             returnKeyType="done"
-            onSubmitEditing={handleLogin}
+            onSubmitEditing={handleRegister}
             style={styles.input}
           />
 
           <Pressable
-            onPress={handleLogin}
+            onPress={handleRegister}
             disabled={loading}
             style={({ pressed }) => [
               styles.button,
@@ -117,17 +163,17 @@ export default function LoginScreen() {
               <ActivityIndicator color="#ffffff" />
             ) : (
               <Text style={styles.buttonText}>
-                ورود
+                ثبت‌نام
               </Text>
             )}
           </Pressable>
 
           <Pressable
-            onPress={() => router.push("/register")}
+            onPress={() => router.replace("/")}
             disabled={loading}
           >
-            <Text style={styles.registerText}>
-              حساب کاربری ندارید؟ ثبت‌نام کنید
+            <Text style={styles.loginText}>
+              قبلاً حساب ساخته‌اید؟ وارد شوید
             </Text>
           </Pressable>
         </View>
@@ -200,7 +246,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  registerText: {
+  loginText: {
     textAlign: "center",
     fontSize: 14,
     color: "#525252",

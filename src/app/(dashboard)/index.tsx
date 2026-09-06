@@ -310,7 +310,7 @@ export default function DashboardScreen() {
                 dashboard.customers
                   .top_by_balance
               }
-              formatNumber={formatNumber}
+              
               formatMoney={formatMoney}
             />
           </View>
@@ -325,7 +325,7 @@ export default function DashboardScreen() {
                 dashboard.suppliers
                   .top_by_balance
               }
-              formatNumber={formatNumber}
+              
               formatMoney={formatMoney}
             />
           </View>

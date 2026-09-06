@@ -5,7 +5,7 @@ import {
   clearTokens,
 } from "./token-storage";
 
-const API_URL = "http://192.168.1.6:8000/api";
+const API_URL = "https://gutss.getvoroa.com/api";
 
 type ApiRequestOptions = RequestInit & {
   accessToken?: string;

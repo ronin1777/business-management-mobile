@@ -19,11 +19,15 @@ function AppNavigator() {
         headerShown: false,
       }}
     >
-      {/* ================= LOGIN ================= */}
+      {/* ================= AUTH ================= */}
 
       <Stack.Protected guard={!user}>
         <Stack.Screen
           name="index"
+        />
+
+        <Stack.Screen
+          name="register"
         />
       </Stack.Protected>
 
